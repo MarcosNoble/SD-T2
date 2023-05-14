@@ -34,4 +34,8 @@ public class RoomChat extends UnicastRemoteObject implements IRoomChat{
     public String getRoomName() throws RemoteException{
         return null;
     }
+
+    public static void main(String[] args) {
+
+    }
 }

@@ -10,7 +10,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat{
         super();
     }
     String userName;
-    private ArrayList<String> roomList;
+    public ArrayList<String> roomList;
 
     @Override
 
@@ -20,9 +20,13 @@ public class UserChat extends UnicastRemoteObject implements IUserChat{
 
     public static void main(String[] args) {
         try {
-            ServerChat stub = (ServerChat) Naming.lookup("rmi://localhost:2020/server");
-            roomList = stub.getRooms();
-        //System.out.println(stub.Hello());
+            UserChat user = new UserChat();
+            ServerChat serverStub = (ServerChat) Naming.lookup("rmi://localhost:2020/server");
+            RoomChat RoomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
+
+            user.roomList = serverStub.getRooms();
+            System.out.println(user.roomList);
+
         } catch (NotBoundException | MalformedURLException | RemoteException e) {
             e.printStackTrace();
         }

@@ -17,12 +17,20 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat{
 
     @Override
     public ArrayList<String> getRooms() throws RemoteException {
-        return this.roomList;
+        if(this.roomList.size() ==0){
+            return null;
+        }else{
+            return this.roomList;
+        }
     }
 
     @Override
     public void createRoom(String roomName) throws RemoteException {
-
+        try {
+            Naming.rebind("rmi://localhost:2020/rooms", new RoomChat(roomName));
+        } catch (RemoteException | MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) throws RemoteException {
@@ -30,7 +38,7 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat{
             //Registry registro = LocateRegistry.createRegistry(2020);
             LocateRegistry.createRegistry(2020);
             Naming.rebind("rmi://localhost:2020/server", new ServerChat());
-            Naming.rebind("rmi://localhost:2020/rooms", new RoomChat());
+
         } catch (RemoteException | MalformedURLException e) {
             e.printStackTrace();
         }

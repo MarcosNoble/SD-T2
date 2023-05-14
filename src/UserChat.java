@@ -22,10 +22,16 @@ public class UserChat extends UnicastRemoteObject implements IUserChat{
         try {
             UserChat user = new UserChat();
             ServerChat serverStub = (ServerChat) Naming.lookup("rmi://localhost:2020/server");
-            RoomChat RoomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
+            RoomChat roomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
 
             user.roomList = serverStub.getRooms();
-            System.out.println(user.roomList);
+            if(user.roomList == null){
+                serverStub.createRoom("placeholder");
+                roomStub.joinRoom(this.userName, new IUserChat());
+            }else{
+                System.out.println(user.roomList);
+                roomStub.joinRoom(this.userName, new IUserChat());
+            }
 
         } catch (NotBoundException | MalformedURLException | RemoteException e) {
             e.printStackTrace();

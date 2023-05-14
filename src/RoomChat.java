@@ -5,8 +5,9 @@ import java.util.Map;
 
 public class RoomChat extends UnicastRemoteObject implements IRoomChat{
     private Map<String, IUserChat> userList;
-    protected RoomChat() throws RemoteException {
-        super();
+    private String nome;
+    protected RoomChat(String nome) throws RemoteException {
+        this.nome = nome;
     }
 
     @Override

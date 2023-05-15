@@ -2,14 +2,13 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
 
 public class ServerChat extends UnicastRemoteObject implements IServerChat{
 
-    private ArrayList<String> roomList;
+    public static ArrayList<String> roomList;
 
     protected ServerChat() throws RemoteException {
         super();
@@ -27,13 +26,15 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat{
     @Override
     public void createRoom(String roomName) throws RemoteException {
         try {
-            Naming.rebind("rmi://localhost:2020/rooms", new RoomChat(roomName));
+            Naming.rebind("rmi://localhost:2020/"+roomName, new RoomChat(roomName));
+            roomList.add(roomName);
         } catch (RemoteException | MalformedURLException e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) throws RemoteException {
+        roomList = new ArrayList<String>();
         try {
             //Registry registro = LocateRegistry.createRegistry(2020);
             LocateRegistry.createRegistry(2020);

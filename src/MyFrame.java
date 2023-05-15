@@ -1,15 +1,23 @@
-import javax.swing.*;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
 public class MyFrame implements ActionListener {
     private final JList<String> list;
-    private JButton selectButton, createNewRoomButton;
+    private JButton selectButton, createNewRoomButton, refreshListButton;
     private ArrayList<String> options;
     private JFrame frame;
     private JTextPane selectedOptionTextPane;
@@ -30,10 +38,15 @@ public class MyFrame implements ActionListener {
         createNewRoomButton = new JButton("Create New Room");
         createNewRoomButton.addActionListener(this);
 
+        // Create the Refresh List button
+        refreshListButton = new JButton("Refresh List");
+        refreshListButton.addActionListener(this);
+
         // Add the components to the panel
         JPanel buttonPanel = new JPanel(new GridLayout(0, 1));
         buttonPanel.add(selectButton);
         buttonPanel.add(createNewRoomButton);
+        buttonPanel.add(refreshListButton);
 
         JPanel optionsPanel = new JPanel(new BorderLayout());
         optionsPanel.add(listScrollPane, BorderLayout.CENTER);
@@ -45,7 +58,7 @@ public class MyFrame implements ActionListener {
         // Create the text window that displays the selected option
         selectedOptionTextPane = new JTextPane();
         selectedOptionTextPane.setEditable(false);
-        selectedOptionTextPane.setPreferredSize(new Dimension(300,200));
+        selectedOptionTextPane.setPreferredSize(new Dimension(300, 200));
         JScrollPane textScrollPane = new JScrollPane(selectedOptionTextPane);
 
         mainPanel.add(textScrollPane, BorderLayout.CENTER);
@@ -72,7 +85,7 @@ public class MyFrame implements ActionListener {
                 selectedOptionTextPane.setText(selectedOption);
                 StyledDocument doc = selectedOptionTextPane.getStyledDocument();
                 Style style = selectedOptionTextPane.addStyle("Color Style", null);
-                StyleConstants.setForeground(style, Color.BLUE);
+                StyleConstants.setForeground(style, java.awt.Color.BLUE);
                 try {
                     doc.insertString(doc.getLength(), " and styled text", style);
                 } catch (javax.swing.text.BadLocationException ex) {
@@ -82,6 +95,17 @@ public class MyFrame implements ActionListener {
         } else if (e.getSource() == createNewRoomButton) {
             // Do something when Create New Room button is clicked
             JOptionPane.showMessageDialog(frame, "Create New Room button clicked.");
+        } else if (e.getSource() == refreshListButton) {
+            // Add a new option to the options list
+            options.add("Option " + (options.size() + 1));
+
+            // Update the list and reflect the changes in the interface
+            list.setListData(options.toArray(new String[0]));
+            list.setSelectedIndex(0);
+            selectedOptionTextPane.setText("");
+
+            // Display a message to confirm the change
+            //JOptionPane.showMessageDialog(frame, "The list has been updated.");
         }
     }
 

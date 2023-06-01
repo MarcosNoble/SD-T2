@@ -11,7 +11,7 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat{
     public static ArrayList<String> roomList;
 
     protected ServerChat() throws RemoteException {
-        super();
+        this.roomList = new ArrayList<>();
     }
 
     @Override
@@ -34,7 +34,7 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat{
     }
 
     public static void main(String[] args) throws RemoteException {
-        roomList = new ArrayList<String>();
+        //roomList = new ArrayList<String>();
         try {
             //Registry registro = LocateRegistry.createRegistry(2020);
             LocateRegistry.createRegistry(2020);

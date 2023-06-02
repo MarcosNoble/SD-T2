@@ -19,6 +19,8 @@ public class UserChat extends UnicastRemoteObject implements IUserChat{
     JTextArea messageArea = new JTextArea(16, 50);
     static String userName;
     public ArrayList<String> roomList;
+    public RoomChat roomStub;
+    public ServerChat serverStub;
     public UserChat()throws RemoteException{
         userName = "placeholder";
         textField.setEditable(false);
@@ -34,42 +36,58 @@ public class UserChat extends UnicastRemoteObject implements IUserChat{
                 textField.setText("");
             }
         });
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
     }
     @Override
 
     public void deliverMsg(String senderName, String msg) throws RemoteException {
 
     }
-    private void run() throws IOException{
+//    private void run() throws IOException{
+//
+//    }
 
+    public void askJoin() throws RemoteException{
+        try {
+            serverStub = (ServerChat) Naming.lookup("rmi://localhost:2020/server");
+            this.roomList = serverStub.getRooms();
+            roomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
+            roomStub.joinRoom(userName, this);
+        } catch (NotBoundException e) {
+            throw new RuntimeException(e);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) {
         try {
             UserChat user = new UserChat();
-            ServerChat serverStub = (ServerChat) Naming.lookup("rmi://localhost:2020/server");
-            //RoomChat roomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
-            user.roomList = serverStub.getRooms();
-            if(user.roomList == null){
-                serverStub.createRoom("placeholder");
-                RoomChat roomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
-                roomStub.joinRoom(userName, user);
-            }else{
-                System.out.println(user.roomList);
-                RoomChat roomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
-                roomStub.joinRoom(userName, user);
-            }
-            try {
-                user.run();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            user.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            user.frame.setVisible(true);
+//            serverStub = (ServerChat) Naming.lookup("rmi://localhost:2020/server");
 
-        } catch (NotBoundException | MalformedURLException | RemoteException e) {
+            //RoomChat roomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
+//            user.roomList = serverStub.getRooms();
+//            if(user.roomList == null){
+//                serverStub.createRoom("placeholder");
+//            }else{
+//                System.out.println(user.roomList);
+//                roomStub = (RoomChat) Naming.lookup("rmi://localhost:2020/rooms");
+//                roomStub.joinRoom(userName, this);
+//            }
+
+//            try {
+//                user.run();
+//                roomStub
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//
+        } catch (/*NotBoundException |*//* MalformedURLException | */RemoteException e) {
             e.printStackTrace();
         }
+
 
 
 

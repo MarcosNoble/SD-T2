@@ -117,14 +117,16 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
                 try {
                     serverStub.createRoom(roomName);
                     refreshList();
-                    JOptionPane.showMessageDialog(frame,"criando"+ roomName);
+                    JOptionPane.showMessageDialog(frame,"Criando"+ roomName);
                     serverStub.createRoom(roomName);
+                    JOptionPane.showMessageDialog(frame, "Entrando na sala");
                 } catch (RemoteException ex) {
                     ex.printStackTrace();
                 }
+            }else{
+                JOptionPane.showMessageDialog(frame, "Sala ja existe");
             }
 
-            JOptionPane.showMessageDialog(frame, "Create New Room button clicked.");
         } else if (e.getSource() == refreshListButton) {
             refreshList();
         }

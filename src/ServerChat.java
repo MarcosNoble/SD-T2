@@ -16,11 +16,12 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat{
 
     @Override
     public ArrayList<String> getRooms() throws RemoteException {
-        if(this.roomList.size() ==0){
-            return null;
-        }else{
-            return this.roomList;
-        }
+//        if(this.roomList.size() ==0){
+//            return null;
+//        }else{
+//            return this.roomList;
+//        }
+        return this.roomList;
     }
 
     @Override

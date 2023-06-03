@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class UserChat extends UnicastRemoteObject implements IUserChat, ActionListener {
     private final JList<String> list;
     private JButton  createNewRoomButton, refreshListButton, joinRoomButton, leaveRoomButton;
-    private ArrayList<String> options;
+    //private ArrayList<String> options;
     private JFrame frame;
     private JTextPane messageArea;
     private StyledDocument doc;
@@ -31,13 +31,14 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
     public ArrayList<String> roomList;
     public UserChat() throws RemoteException{
         nome = "placeholder";
+        this.roomList = new ArrayList<>();
         try {
             serverStub = (IServerChat)  Naming.lookup("rmi://localhost:2020/server");
             System.out.println("server stub criado");
         } catch (MalformedURLException | NotBoundException e) {
             throw new RuntimeException(e);
         }
-        this.roomList = roomList;
+        //this.roomList = roomList;
         // Create the list
         list = new JList<String>(roomList.toArray(new String[0]));
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -113,31 +114,32 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         } else if (e.getSource() == createNewRoomButton) {
             // Do something when Create New Room button is clicked
             String roomName = JOptionPane.showInputDialog(frame, "Enter the room name:");
-            if (!options.contains(roomName)) {
-                try {
-                    serverStub.createRoom(roomName);
-                    refreshList();
-                    JOptionPane.showMessageDialog(frame,"Criando"+ roomName);
-                    serverStub.createRoom(roomName);
-                    JOptionPane.showMessageDialog(frame, "Entrando na sala");
-                } catch (RemoteException ex) {
-                    ex.printStackTrace();
+            if(roomList != null) {
+                if (!roomList.contains(roomName)) {
+                    try {
+                        JOptionPane.showMessageDialog(frame, "Criando" + roomName);
+                        serverStub.createRoom(roomName);
+                        refreshList();
+                        //serverStub.createRoom(roomName);
+                        //JOptionPane.showMessageDialog(frame, "Entrando na sala");
+                    } catch (RemoteException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Sala ja existe");
                 }
-            }else{
-                JOptionPane.showMessageDialog(frame, "Sala ja existe");
             }
-
         } else if (e.getSource() == refreshListButton) {
             refreshList();
         }
     }
     public void refreshList(){
         try {
-            user.roomList = serverStub.getRooms();
+            this.roomList = serverStub.getRooms();
+            list.setListData(roomList.toArray(new String[0]));
         } catch (RemoteException ex) {
             throw new RuntimeException(ex);
         }
-        list.setListData(roomList.toArray(new String[0]));
     }
     public void joinRoom(String nomeSala){
         try {

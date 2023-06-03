@@ -1,20 +1,26 @@
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
 public class UserChat extends UnicastRemoteObject implements IUserChat, ActionListener {
     private final JList<String> list;
-    private JButton selectButton, createNewRoomButton;
+    private JButton  createNewRoomButton, refreshListButton, joinRoomButton, leaveRoomButton;
     private ArrayList<String> options;
     private JFrame frame;
-    private JTextPane selectedOptionTextPane;
+    private JTextPane messageArea;
+    private StyledDocument doc;
+    private Style style;
 
     public  String nome;
     public  IServerChat serverStub;
@@ -25,24 +31,35 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
     public ArrayList<String> roomList;
     public UserChat() throws RemoteException{
         nome = "placeholder";
-        this.options = options;
+        try {
+            serverStub = (IServerChat)  Naming.lookup("rmi://localhost:2020/server");
+            System.out.println("server stub criado");
+        } catch (MalformedURLException | NotBoundException e) {
+            throw new RuntimeException(e);
+        }
+        this.roomList = roomList;
         // Create the list
-        list = new JList<String>(options.toArray(new String[0]));
+        list = new JList<String>(roomList.toArray(new String[0]));
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane listScrollPane = new JScrollPane(list);
-
-        // Create the Select button
-        selectButton = new JButton("Select");
-        selectButton.addActionListener(this);
-
         // Create the Create New Room button
         createNewRoomButton = new JButton("Create New Room");
         createNewRoomButton.addActionListener(this);
-
+        // Create the Refresh List button
+        refreshListButton = new JButton("Refresh List");
+        refreshListButton.addActionListener(this);
+        //Create Join Button
+        joinRoomButton = new JButton(("Join"));
+        joinRoomButton.addActionListener(this);
+        //Leave Button
+        leaveRoomButton = new JButton("Leave");
+        leaveRoomButton.addActionListener(this);
         // Add the components to the panel
         JPanel buttonPanel = new JPanel(new GridLayout(0, 1));
-        buttonPanel.add(selectButton);
         buttonPanel.add(createNewRoomButton);
+        buttonPanel.add(refreshListButton);
+        buttonPanel.add(joinRoomButton);
+        buttonPanel.add(leaveRoomButton);
 
         JPanel optionsPanel = new JPanel(new BorderLayout());
         optionsPanel.add(listScrollPane, BorderLayout.CENTER);
@@ -52,10 +69,10 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         mainPanel.add(optionsPanel, BorderLayout.WEST);
 
         // Create the text window that displays the selected option
-        selectedOptionTextPane = new JTextPane();
-        selectedOptionTextPane.setEditable(false);
-        selectedOptionTextPane.setPreferredSize(new Dimension(300, 200));
-        JScrollPane textScrollPane = new JScrollPane(selectedOptionTextPane);
+        messageArea = new JTextPane();
+        messageArea.setEditable(false);
+        messageArea.setPreferredSize(new Dimension(300, 200));
+        JScrollPane textScrollPane = new JScrollPane(messageArea);
 
         mainPanel.add(textScrollPane, BorderLayout.CENTER);
 
@@ -67,32 +84,65 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        // Initialize the document and style
+        doc = messageArea.getStyledDocument();
+        style = messageArea.addStyle("Color Style", null);
+    }
+    private void appendToMessageArea(String message, Color color) {
+        try {
+            if (color != null) {
+                StyleConstants.setForeground(style, Color.BLUE);
+            }
+            doc.insertString(doc.getLength(), message, style);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == selectButton) {
+        if (e.getSource() == joinRoomButton) {
             // Get the selected item from the list
             String selectedOption = list.getSelectedValue();
             if (selectedOption == null) {
                 JOptionPane.showMessageDialog(frame, "Please select an option.");
             } else {
                 // Do something with the selected option
-                selectedOptionTextPane.setText(selectedOption);
-                StyledDocument doc = selectedOptionTextPane.getStyledDocument();
-                Style style = selectedOptionTextPane.addStyle("Color Style", null);
-                StyleConstants.setForeground(style, Color.BLUE);
-                try {
-                    doc.insertString(doc.getLength(), " and styled text", style);
-                } catch (javax.swing.text.BadLocationException ex) {
-                    ex.printStackTrace();
-                }
-                // Call sayHello method of the Client object
-
+                joinRoom(selectedOption);
+                appendToMessageArea("entrando na sala "+ selectedOption + "\n", Color.BLUE);
             }
         } else if (e.getSource() == createNewRoomButton) {
             // Do something when Create New Room button is clicked
-            JOptionPane.showMessageDialog(frame, "Create New Room button clicked.");
+            String roomName = JOptionPane.showInputDialog(frame, "Enter the room name:");
+            if (!options.contains(roomName)) {
+                try {
+                    serverStub.createRoom(roomName);
+                    refreshList();
+                    JOptionPane.showMessageDialog(frame,"criando"+ roomName);
+                    serverStub.createRoom(roomName);
+                } catch (RemoteException ex) {
+                    ex.printStackTrace();
+                }
+            }
 
+            JOptionPane.showMessageDialog(frame, "Create New Room button clicked.");
+        } else if (e.getSource() == refreshListButton) {
+            refreshList();
+        }
+    }
+    public void refreshList(){
+        try {
+            user.roomList = serverStub.getRooms();
+        } catch (RemoteException ex) {
+            throw new RuntimeException(ex);
+        }
+        list.setListData(roomList.toArray(new String[0]));
+    }
+    public void joinRoom(String nomeSala){
+        try {
+            roomStub = (IRoomChat) Naming.lookup("rmi://localhost:2020/"+nomeSala);
+            roomStub.joinRoom(this.nome,this);
+        } catch (RemoteException|MalformedURLException|NotBoundException ex) {
+            ex.printStackTrace();
         }
     }
 

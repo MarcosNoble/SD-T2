@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class UserChat extends UnicastRemoteObject implements IUserChat, ActionListener {
     private final JList<String> list;
     private JButton  createNewRoomButton, refreshListButton, joinRoomButton, leaveRoomButton, closeRoomButton;
-    JTextField textField;
+    private JTextField textField;
     private JFrame frame;
     private JTextPane messageArea;
     private StyledDocument doc;
@@ -83,7 +83,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         // Set up the frame
         frame = new JFrame();
         frame.getContentPane().add(textField, BorderLayout.SOUTH);
-        frame.setTitle("Options");
+        frame.setTitle("ChatSD");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
         frame.pack();

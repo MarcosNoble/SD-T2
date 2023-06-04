@@ -22,12 +22,14 @@ public class RoomChat extends UnicastRemoteObject implements IRoomChat{
 
     @Override
     public void joinRoom(String usrName, IUserChat user) throws RemoteException{
-        if(userList.containsKey(usrName)){
-            IUserChat thisUser = userList.get(usrName);
-            thisUser.deliverMsg("SYSTEM", "### NOME " + usrName + "INDISPONIVEL ###");
+        if(!userList.containsKey(usrName)){
+            userList.put(usrName, user);
+
+            sendMsg("SYSTEM", "#### " + usrName + " ENTROU NA SALA ####");
+            user.deliverMsg("SYSTEMJoinSuccess","AAAAA");
+        }else{
+            user.deliverMsg("SYSTEMJoin","AAAAA");
         }
-        userList.put(usrName, user);
-        sendMsg("SYSTEM", "#### "+ usrName +" ENTROU NA SALA ####");
     }
 
     @Override
@@ -38,7 +40,7 @@ public class RoomChat extends UnicastRemoteObject implements IRoomChat{
 
     @Override
     public void closeRoom() throws RemoteException{
-        sendMsg("SYSTEMCLOSE","Sala fechada pelo servidor.");
+        sendMsg("SYSTEMClose","Sala fechada pelo servidor.");
         userList.clear();
     }
 
@@ -46,8 +48,4 @@ public class RoomChat extends UnicastRemoteObject implements IRoomChat{
     public String getRoomName() throws RemoteException{
         return nome;
     }
-
-//    public static void main(String[] args) {
-//
-//    }
 }

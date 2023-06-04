@@ -26,7 +26,6 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
     public  IServerChat serverStub;
     public  IRoomChat roomStub;
     public UserChat usuario;
-    public  String selectedOption;
     public  String salaAtual;
     public ArrayList<String> roomList;
     public UserChat() throws RemoteException{
@@ -100,7 +99,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == joinRoomButton) {
-            selectedOption = list.getSelectedValue();
+            String selectedOption = list.getSelectedValue();
             if (selectedOption == null) {
                 JOptionPane.showMessageDialog(frame, "Selecione uma sala");
             } else {
@@ -126,7 +125,8 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         } else if (e.getSource() == leaveRoomButton) {
             try {
                 roomStub.leaveRoom(this.nome);
-                unbind(selectedOption);
+                unbind();
+                joinRoomButton.setEnabled(true);
             } catch (RemoteException ex) {
                 ex.printStackTrace();
             }
@@ -172,7 +172,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
             case "SYSTEM" -> appendToMessageArea(msg + "\n", Color.BLUE);
             case "SYSTEMClose" -> {
                 appendToMessageArea(msg + "\n", Color.BLUE);
-                unbind(selectedOption);
+                unbind();
                 joinRoomButton.setEnabled(true);
                 roomList.remove(salaAtual);
                 refreshList();
@@ -182,13 +182,13 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(frame, "Nome ja existe");
                 });
-                unbind(selectedOption);
+                unbind();
             }
             case "SYSTEMJoinSuccess" -> joinRoomButton.setEnabled(false);
             default -> {
                 if (msg.equals("Sala fechada pelo servidor.")) {
                     appendToMessageArea(msg + "\n", Color.BLUE);
-                    unbind(selectedOption);
+                    unbind();
                     joinRoomButton.setEnabled(true);
                     roomList.remove(salaAtual);
                     refreshList();
@@ -199,7 +199,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         }
     }
 
-    public  void unbind(String nomeSala){
+    public  void unbind( ){
         roomStub = null;
     }
 

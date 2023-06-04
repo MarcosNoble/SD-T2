@@ -38,7 +38,8 @@ public class RoomChat extends UnicastRemoteObject implements IRoomChat{
 
     @Override
     public void closeRoom() throws RemoteException{
-        //tem que tirar do registo RMI? Tem que chamar o server?
+        sendMsg("SYSTEMCLOSE","Sala fechada pelo servidor.");
+        userList.clear();
     }
 
     @Override

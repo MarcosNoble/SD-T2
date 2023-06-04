@@ -15,13 +15,12 @@ import java.util.ArrayList;
 
 public class UserChat extends UnicastRemoteObject implements IUserChat, ActionListener {
     private final JList<String> list;
-    private JButton  createNewRoomButton, refreshListButton, joinRoomButton, leaveRoomButton, tester;
-    //private ArrayList<String> options;
+    private JButton  createNewRoomButton, refreshListButton, joinRoomButton, leaveRoomButton, closeRoomButton;
+    JTextField textField;
     private JFrame frame;
     private JTextPane messageArea;
     private StyledDocument doc;
     private Style style;
-
     public  String nome;
     public  IServerChat serverStub;
     public  IRoomChat roomStub;
@@ -30,7 +29,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
 
     public ArrayList<String> roomList;
     public UserChat() throws RemoteException{
-        nome = "placeholder";
+        nome = JOptionPane.showInputDialog(frame, "Escolha o seu nome");
         this.roomList = new ArrayList<>();
         try {
             serverStub = (IServerChat)  Naming.lookup("rmi://localhost:2020/server");
@@ -38,8 +37,9 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         } catch (MalformedURLException | NotBoundException e) {
             throw new RuntimeException(e);
         }
-        //this.roomList = roomList;
-        // Create the list
+        textField = new JTextField(50);
+        textField.setEditable(true);
+        textField.addActionListener(this);
         list = new JList<String>(roomList.toArray(new String[0]));
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane listScrollPane = new JScrollPane(list);
@@ -55,15 +55,15 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         //Leave Button
         leaveRoomButton = new JButton("Leave");
         leaveRoomButton.addActionListener(this);
-        tester = new JButton("msg teste");
-        tester.addActionListener(this);
+        closeRoomButton = new JButton("msg teste");
+        closeRoomButton.addActionListener(this);
         // Add the components to the panel
         JPanel buttonPanel = new JPanel(new GridLayout(0, 1));
         buttonPanel.add(createNewRoomButton);
         buttonPanel.add(refreshListButton);
         buttonPanel.add(joinRoomButton);
         buttonPanel.add(leaveRoomButton);
-        buttonPanel.add(tester);
+        buttonPanel.add(closeRoomButton);
 
         JPanel optionsPanel = new JPanel(new BorderLayout());
         optionsPanel.add(listScrollPane, BorderLayout.CENTER);
@@ -82,6 +82,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
 
         // Set up the frame
         frame = new JFrame();
+        frame.getContentPane().add(textField, BorderLayout.SOUTH);
         frame.setTitle("Options");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
@@ -91,6 +92,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         // Initialize the document and style
         doc = messageArea.getStyledDocument();
         style = messageArea.addStyle("Color Style", null);
+
     }
     private void appendToMessageArea(String message, Color color) {
         try {
@@ -140,11 +142,18 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
             } catch (RemoteException ex) {
                 ex.printStackTrace();
             }
-        }else if (e.getSource()== tester){
+        }else if (e.getSource()== closeRoomButton){
             try {
                 roomStub.sendMsg(this.nome, "Mensagem teste");
             } catch (RemoteException ex) {
                 ex.printStackTrace();
+            }
+        }else if (e.getSource() == textField){
+            try {
+                roomStub.sendMsg(this.nome, textField.getText());
+                textField.setText("");
+            } catch (RemoteException ex) {
+                    ex.printStackTrace();
             }
         }
     }
@@ -169,9 +178,16 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
     public void deliverMsg(String senderName, String msg) throws RemoteException {
         if(senderName.equals("SYSTEM")) {
             appendToMessageArea(msg + "\n", Color.BLUE);
+        }else if (senderName.equals("SYSTEMCLOSE")){
+            appendToMessageArea(msg + "\n", Color.BLUE);
+            refreshList();
         }else{
             appendToMessageArea(senderName+ ": "+ msg + "\n", null);
         }
+    }
+
+    public void setName(){
+
     }
 
     public static void main(String[] args) throws RemoteException {

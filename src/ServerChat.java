@@ -16,11 +16,6 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat{
 
     @Override
     public ArrayList<String> getRooms() throws RemoteException {
-//        if(this.roomList.size() ==0){
-//            return null;
-//        }else{
-//            return this.roomList;
-//        }
         return this.roomList;
     }
 
@@ -35,9 +30,7 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat{
     }
 
     public static void main(String[] args) throws RemoteException {
-        //roomList = new ArrayList<String>();
         try {
-            //Registry registro = LocateRegistry.createRegistry(2020);
             LocateRegistry.createRegistry(2020);
             Naming.rebind("rmi://localhost:2020/server", new ServerChat());
 

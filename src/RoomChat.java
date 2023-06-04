@@ -22,11 +22,17 @@ public class RoomChat extends UnicastRemoteObject implements IRoomChat{
 
     @Override
     public void joinRoom(String usrName, IUserChat user) throws RemoteException{
+        if(userList.containsKey(usrName)){
+            IUserChat thisUser = userList.get(usrName);
+            thisUser.deliverMsg("SYSTEM", "### NOME " + usrName + "INDISPONIVEL ###");
+        }
         userList.put(usrName, user);
+        sendMsg("SYSTEM", "#### "+ usrName +" ENTROU NA SALA ####");
     }
 
     @Override
     public void leaveRoom(String usrName) throws RemoteException{
+        sendMsg("SYSTEM", "#### "+ usrName +" SAIU DA SALA ####"+ this.nome);
         userList.remove(usrName);
     }
 

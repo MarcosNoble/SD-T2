@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class UserChat extends UnicastRemoteObject implements IUserChat, ActionListener {
     private final JList<String> list;
-    private JButton  createNewRoomButton, refreshListButton, joinRoomButton, leaveRoomButton;
+    private JButton  createNewRoomButton, refreshListButton, joinRoomButton, leaveRoomButton, tester;
     //private ArrayList<String> options;
     private JFrame frame;
     private JTextPane messageArea;
@@ -55,12 +55,15 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         //Leave Button
         leaveRoomButton = new JButton("Leave");
         leaveRoomButton.addActionListener(this);
+        tester = new JButton("msg teste");
+        tester.addActionListener(this);
         // Add the components to the panel
         JPanel buttonPanel = new JPanel(new GridLayout(0, 1));
         buttonPanel.add(createNewRoomButton);
         buttonPanel.add(refreshListButton);
         buttonPanel.add(joinRoomButton);
         buttonPanel.add(leaveRoomButton);
+        buttonPanel.add(tester);
 
         JPanel optionsPanel = new JPanel(new BorderLayout());
         optionsPanel.add(listScrollPane, BorderLayout.CENTER);
@@ -93,6 +96,8 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         try {
             if (color != null) {
                 StyleConstants.setForeground(style, Color.BLUE);
+            }else{
+                StyleConstants.setForeground(style, Color.black);
             }
             doc.insertString(doc.getLength(), message, style);
         } catch (BadLocationException e) {
@@ -109,28 +114,38 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
             } else {
                 // Do something with the selected option
                 joinRoom(selectedOption);
-                appendToMessageArea("entrando na sala "+ selectedOption + "\n", Color.BLUE);
+                //appendToMessageArea("entrando na sala "+ selectedOption + "\n", Color.BLUE);
             }
         } else if (e.getSource() == createNewRoomButton) {
             // Do something when Create New Room button is clicked
-            String roomName = JOptionPane.showInputDialog(frame, "Enter the room name:");
-            if(roomList != null) {
+            String roomName = JOptionPane.showInputDialog(frame, "Escolha o nome da sala:");
+            if(roomList != null && roomName != null && !roomName.isEmpty()) {
                 if (!roomList.contains(roomName)) {
                     try {
-                        JOptionPane.showMessageDialog(frame, "Criando" + roomName);
+                        JOptionPane.showMessageDialog(frame, "Sala " + roomName + " criada");
                         serverStub.createRoom(roomName);
                         refreshList();
-                        //serverStub.createRoom(roomName);
-                        //JOptionPane.showMessageDialog(frame, "Entrando na sala");
                     } catch (RemoteException ex) {
                         ex.printStackTrace();
                     }
                 } else {
-                    JOptionPane.showMessageDialog(frame, "Sala ja existe");
+                    JOptionPane.showMessageDialog(frame, " Sala ja existe");
                 }
             }
         } else if (e.getSource() == refreshListButton) {
             refreshList();
+        } else if (e.getSource() == leaveRoomButton) {
+            try {
+                roomStub.leaveRoom(this.nome);
+            } catch (RemoteException ex) {
+                ex.printStackTrace();
+            }
+        }else if (e.getSource()== tester){
+            try {
+                roomStub.sendMsg(this.nome, "Mensagem teste");
+            } catch (RemoteException ex) {
+                ex.printStackTrace();
+            }
         }
     }
     public void refreshList(){
@@ -152,7 +167,11 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
 
     @Override
     public void deliverMsg(String senderName, String msg) throws RemoteException {
-
+        if(senderName.equals("SYSTEM")) {
+            appendToMessageArea(msg + "\n", Color.BLUE);
+        }else{
+            appendToMessageArea(senderName+ ": "+ msg + "\n", null);
+        }
     }
 
     public static void main(String[] args) throws RemoteException {

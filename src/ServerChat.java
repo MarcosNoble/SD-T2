@@ -104,7 +104,7 @@ public class ServerChat extends UnicastRemoteObject implements IServerChat, Acti
     public static void main(String[] args) throws RemoteException {
         try {
             LocateRegistry.createRegistry(2020);
-            Naming.rebind("rmi://localhost:2020/server", new ServerChat());
+            Naming.rebind("rmi://localhost:2020/Servidor", new ServerChat());
         } catch (RemoteException | MalformedURLException e) {
             e.printStackTrace();
         }

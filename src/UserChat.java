@@ -32,7 +32,7 @@ public class UserChat extends UnicastRemoteObject implements IUserChat, ActionLi
         nome = JOptionPane.showInputDialog(frame, "Escolha o seu nome");
         this.roomList = new ArrayList<>();
         try {
-            serverStub = (IServerChat)  Naming.lookup("rmi://localhost:2020/server");
+            serverStub = (IServerChat)  Naming.lookup("rmi://localhost:2020/Servidor");
             System.out.println("server stub criado");
         } catch (MalformedURLException | NotBoundException e) {
             throw new RuntimeException(e);
